@@ -1,15 +1,27 @@
-<!DOCTYPE html> <!-- Angir at dokumentet er HTML5 -->
-<html lang="no"> <!-- Setter språk til norsk -->
-<head> <!-- Starter head-seksjonen -->
-  <meta charset="UTF-8" /> <!-- Bruker UTF-8 for norske tegn -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- Gjør siden responsiv på mobil -->
-  <title><%= title %></title> <!-- Setter side-tittel dynamisk fra serveren -->
-  <link rel="stylesheet" href="/styles.css" /> <!-- Kobler til ekstern CSS fra /public -->
-</head> <!-- Slutt på head -->
-<body> <!-- Starter body-innhold -->
-  <header class="site-header"> <!-- Toppseksjon -->
-    <nav class="nav"> <!-- Navigasjonslinje -->
-      <a href="/" class="brand">Sangregister le Magnus</a> <!-- Lenke/brand til forsiden -->
-    </nav> <!-- Slutt på nav -->
-  </header> <!-- Slutt på header -->
-  <main class="container"> <!-- Starter hovedinnhold (lukkes i footer-partial) -->
+<!DOCTYPE html> <%# Angir at dokumentet er HTML5 %>
+<html lang="no"> <%# Setter språk til norsk %>
+<head> <%# Starter head-seksjonen %>
+  <meta charset="UTF-8" /> <%# Norske tegn %>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <%# Responsivt %>
+  <title><%= title %></title> <%# Dynamisk sidetittel %>
+  <link rel="stylesheet" href="/styles.css" /> <%# Ekstern CSS %>
+</head> <%# Slutt head %>
+<body> <%# Starter body %>
+  <header class="site-header"> <%# Toppseksjon %>
+    <nav class="nav"> <%# Navigasjonslinje %>
+      <a href="/" class="brand">Folkeregister le Magnus</a> <%# Lenke til forsiden %>
+      <% if (!currentUser) { %> <%# Hvis ikke innlogget %>
+        <a href="/users/login" class="brand" style="font-weight:600">Logg inn</a> <%# Link %>
+        <a href="/users/register" class="brand" style="font-weight:600">Registrer</a> <%# Link %>
+      <% } else { %> <%# Hvis innlogget %>
+        <a href="/users/me" class="brand" style="font-weight:600">Min profil</a> <%# Link %>
+        <form action="/users/logout" method="POST" style="display:inline"> <%# Utloggingsskjema %>
+          <button type="submit" style="margin-left:8px">Logg ut</button> <%# Knapp %>
+        </form> <%# Slutt skjema %>
+      <% } %> <%# Slutt if %>
+    </nav> <%# Slutt nav %>
+  </header> <%# Slutt header %>
+  <main class="container"> <%# Starter hovedinnhold %>
+    <% if (typeof message !== 'undefined' && message) { %> <%# Melding fra server %>
+      <div class="notice"><%= message %></div> <%# Info-boks %>
+    <% } %> <%# Slutt melding %>

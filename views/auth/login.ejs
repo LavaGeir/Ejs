@@ -1,0 +1,21 @@
+<%- include('../partials/header', { title: title, message: message }) %> <%# Header %>
+
+<h1><%= title %></h1> <%# Sentrert %>
+
+<section class="card"> <%# Panel for innlogging %>
+  <h2>Logg inn</h2> <%# Seksjonstittel %>
+  <% if (message) { %> <%# Viser ev. meldinger %>
+    <div class="notice"><%= message %></div> <%# Info-boks %>
+  <% } %> <%# Slutt if %>
+  <form action="/users/login" method="POST" class="form"> <%# Skjema %>
+    <label for="username">Brukernavn</label> <%# Etikett %>
+    <input id="username" name="username" type="text" required /> <%# Input %>
+
+    <label for="password">Passord</label> <%# Etikett %>
+    <input id="password" name="password" type="password" required /> <%# Input %>
+
+    <button type="submit">Logg inn</button> <%# Knapp %>
+  </form> <%# Slutt skjema %>
+</section> <%# Slutt panel %>
+
+<%- include('../partials/footer') %> <%# Footer %>

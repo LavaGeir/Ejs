@@ -1,38 +1,40 @@
-<%- include('partials/header') %> <!-- Inkluderer header-partialen (uten escaping) -->
+<%- include('partials/header', { title: title, message: message }) %> <%# Inkluderer header-partialen med tittel og melding %>
 
-<h1><%= title %></h1> <!-- Viser sidetittel trygt -->
+<h1><%= title %></h1> <%# Sentrert via CSS (h1-regelen) %>
 
-<% if (typeof message !== 'undefined' && message) { %> <!-- Hvis serveren har sendt en melding -->
-  <div class="notice"><%= message %></div> <!-- Viser meldingen i en meldingsboks -->
-<% } %> <!-- Slutt på melding-sjekk -->
+<section class="card"> <%# Kort med skjema for å legge til person %>
+  <h2>Legg til Person</h2> <%# Seksjonstittel %>
+  <form action="/people" method="POST" class="form"> <%# Skjema for å sende POST til /people %>
+    <label for="name">Navn</label> <%# Etikett for navn %>
+    <input id="name" name="name" type="text" required /> <%# Input for navn (påkrevd) %>
 
-<section class="card"> <!-- Kort med skjema for å legge til person -->
-  <h2>Legg til Person</h2> <!-- Seksjonstittel -->
-  <form action="/people" method="POST" class="form"> <!-- Skjema som sender POST til /people -->
-    <label for="name">Navn</label> <!-- Etikett for navn -->
-    <input id="name" name="name" type="text" required /> <!-- Tekstfelt for navn (påkrevd) -->
+    <label for="birthyear">Fødselsår</label> <%# Etikett for fødselsår %>
+    <input id="birthyear" name="birthyear" type="number" min="1800" max="<%= new Date().getFullYear() %>" step="1" required /> <%# Tallfelt for år %>
 
-    <label for="age">Alder</label> <!-- Etikett for alder -->
-    <input id="age" name="age" type="text" required /> <!-- Tekstfelt for alder (påkrevd) -->
+    <label for="nationality">Nasjonalitet</label> <%# Etikett for nasjonalitet %>
+    <input id="nationality" name="nationality" type="text" required /> <%# Input for nasjonalitet %>
 
-    <label for="nationality">Nasjonalitet</label> <!-- Etikett for nasjonalitet -->
-    <input id="nationality" name="nationality" type="text" /> <!-- Tekstfelt for nasjonalitet -->
+    <button type="submit">Lagre person</button> <%# Lagre-knapp %>
+  </form> <%# Slutt skjema %>
+</section> <%# Slutt kort %>
 
-    <button type="submit">Lagre person</button> <!-- Sendeknapp for skjemaet -->
-  </form> <!-- Slutt på skjema -->
+<section class="card"> <%# Kort som viser registrerte personer %>
+  <h2>Registrerte personer</h2> <%# Seksjonstittel %>
+  <ul> <%# Starter liste %>
+    <% if (!people || people.length === 0) { %> <%# Hvis listen er tom %>
+      <li>(Ingen personer enda)</li> <%# Tom-liste melding %>
+    <% } %> <%# Slutt tom-sjekk %>
+    <% for (const p of people) { %> <%# Løkker gjennom personer %>
+      <li> <%# Ett listeelement per person %>
+        <strong><%= p.name %></strong> <%# Navn %>
+        –<%= new Date().getFullYear() - p.birthyear %> År gammel
+        – nasjonalitet: <em><%= p.nationality %></em> <%# Nasjonalitetens navn %>
+        <form action="/people/<%= p.id %>/delete" method="POST" style="display:inline;margin-left:8px"> <%# Slette-skjema %>
+          <button type="submit">Slett</button> <%# Slette-knapp %>
+        </form> <%# Slutt slette-skjema %>
+      </li> <%# Slutt listeelement %>
+    <% } %> <%# Slutt løkke %>
+  </ul> <%# Slutt liste %>
+</section> <%# Slutt kort %>
 
-<section class="card"> <!-- Kort som viser registrerte personer -->
-  <h2>Registrerte personer</h2> <!-- Seksjonstittel -->
-  <ul> <!-- Starter liste over personer -->
-    <% if (people.length === 0) { %> <!-- Sjekker om listen er tom -->
-      <li>(Ingen personer enda)</li> <!-- Viser tekst når det ikke finnes personer -->
-    <% } %> <!-- Slutt på tom-sjekk -->
-    <% for (const p of people) { %> <!-- Løkker gjennom alle personer -->
-      <li> <!-- Starter listeelement -->
-        <strong><%= p.name %></strong> <em><%= p.age %></em> År gammel, fra <em><%= p.nationality %></em> <!-- Viser navn, alder og nasjonalitet trygt -->
-      </li> <!-- Slutt på listeelement -->
-    <% } %> <!-- Slutt på løkke -->
-  </ul> <!-- Slutt på liste -->
-</section> <!-- Slutt på liste-kort -->
-
-<%- include('partials/footer') %> <!-- Inkluderer footer-partialen (uten escaping) -->
+<%- include('partials/footer') %> <%# Inkluderer footer-partialen (lukker main/body/html) %>

@@ -1,0 +1,27 @@
+<%- include('../partials/header', { title: title, message: message }) %> <%# Header %>
+
+<h1><%= title %></h1> <%# Sentrert %>
+
+<section class="card"> <%# Panel for profilinfo %>
+  <h2>Hei, <%= user.username %></h2> <%# Velkomst %>
+  <p>Opprettet: <%= new Date(user.created_at).toLocaleString() %></p> <%# Tidspunkt %>
+</section> <%# Slutt panel %>
+
+<section class="card"> <%# Panel for oppdater e-post %>
+  <h2>Oppdater e-post</h2> <%# Tittel %>
+  <form action="/users/me" method="POST" class="form"> <%# Skjema %>
+    <label for="email">E-post</label> <%# Etikett %>
+    <input id="email" name="email" type="email" value="<%= user.email %>" required /> <%# Forhåndsutfylt %>
+    <button type="submit">Lagre</button> <%# Knapp %>
+  </form> <%# Slutt skjema %>
+</section> <%# Slutt panel %>
+
+<section class="card"> <%# Panel for slett konto %>
+  <h2>Slett konto</h2> <%# Tittel %>
+  <p>OBS: Dette sletter også alle dine poster/oppføringer som er koblet til kontoen.</p> <%# Info %>
+  <form action="/users/delete" method="POST"> <%# Skjema %>
+    <button type="submit" class="danger">Slett meg</button> <%# Rød knapp %>
+  </form> <%# Slutt skjema %>
+</section> <%# Slutt panel %>
+
+<%- include('../partials/footer') %> <%# Footer %>

@@ -1,0 +1,24 @@
+<%- include('../partials/header', { title: title, message: message }) %> <%# Header-partial %>
+
+<h1><%= title %></h1> <%# Sentrert via CSS %>
+
+<section class="card"> <%# Panel for registrering %>
+  <h2>Lag ny konto</h2> <%# Seksjonstittel %>
+  <% if (message) { %> <%# Melding ved feil/suksess %>
+    <div class="notice"><%= message %></div> <%# Info-boks %>
+  <% } %> <%# Slutt if %>
+  <form action="/users/register" method="POST" class="form"> <%# Skjema for registrering %>
+    <label for="username">Brukernavn</label> <%# Etikett %>
+    <input id="username" name="username" type="text" required /> <%# Input %>
+
+    <label for="email">E-post</label> <%# Etikett %>
+    <input id="email" name="email" type="email" required /> <%# Input %>
+
+    <label for="password">Passord</label> <%# Etikett %>
+    <input id="password" name="password" type="password" required /> <%# Input %>
+
+    <button type="submit">Registrer</button> <%# Knapp %>
+  </form> <%# Slutt skjema %>
+</section> <%# Slutt panel %>
+
+<%- include('../partials/footer') %> <%# Footer %>

@@ -1,92 +1,133 @@
-/* Grunnstil for hele siden */ 
-body { /* Body-elementet */
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; /* Lesbar fontfamilie */
-  margin: 0; /* Fjerner standard margin */
-  padding: 0; /* Fjerner standard padding */
-  background: #000000; /* Lys bakgrunnsfarge */
-  color: hsl(0, 0%, 100%); /* Mørk tekst for god kontrast */
+/* ====== Reset/grunnlag ====== */
+* { box-sizing: border-box; } /* Inkluder padding/border i width/height */
+html, body { height: 100%; } /* Full høyde */
+body { /* Body-stil */
+  margin: 0; /* Fjern margin */
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; /* Lesbar font */
+  background: #0b0f14; /* Mørk bakgrunn */
+  color: #e5e7eb; /* Lys tekst */
+  line-height: 1.6; /* Luft mellom linjer */
 }
 
-/* Toppnavigasjon */
-.site-header { /* Header-område */
-  background: rgb(0, 0, 0); /* Hvit bakgrunn */
-  border-bottom: 1px solid #e5e7eb; /* Tynn bunnramme */
-  padding: 12px 16px; /* Indre luft */
+/* ====== Tema-variabler ====== */
+:root {
+  --bg: #0b0f14;            /* Bakgrunn */
+  --panel: #10151c;         /* Kort/panel */
+  --border: #1f2937;        /* Kantlinjer */
+  --text: #e5e7eb;          /* Hovedtekst */
+  --muted: #9ca3af;         /* Dempet tekst */
+  --accent: #10b981;        /* Aksent (teal/grønn) */
+  --accent-600: #059669;    /* Mørkere aksent */
+  --danger: #ef4444;        /* Rød (farlig) */
 }
 
-/* Nav-bar layout */
+/* ====== Header/nav ====== */
+.site-header { /* Toppbar */
+  background: #0a0f13; /* Litt mørkere for avgrensning */
+  border-bottom: 1px solid var(--border); /* Tynn kant under */
+  padding: 14px 18px; /* Innvendig luft */
+}
 .nav { /* Navigasjonscontainer */
-  display: flex; /* Bruker flex-layout */
-  align-items: center; /* Sentrerer vertikalt */
-  justify-content: space-between; /* Plasserer elementer i hver sin ende */
+  display: flex; /* Flex for enkel sentrering */
+  align-items: center; /* Vertikal sentrering */
+  justify-content: center; /* Horisontal sentrering */
+  gap: 16px; /* Avstand mellom elementer */
 }
-
-/* Brand/lenke-stil */
-.brand { /* Logo/brand-lenken */
+.brand { /* Nav-lenker */
   font-weight: 700; /* Fet skrift */
-  color: #0f766e; /* Teal-farge */
+  color: var(--accent); /* Aksentfarge */
   text-decoration: none; /* Ingen understrek */
+  letter-spacing: 0.3px; /* Litt bokstavavstand */
+}
+.brand:hover { color: var(--accent-600); } /* Mørkere ved hover */
+
+/* ====== Hovedcontainer ====== */
+.container { /* Wrapper for innhold */
+  max-width: 900px; /* Begrens bredde */
+  margin: 24px auto; /* Sentrer og gi topp/bunn-margin */
+  padding: 0 16px; /* Sidepadding for små skjermer */
 }
 
-/* Container for innhold */
-.container { /* Hovedinnpakning */
-  max-width: 800px; /* Begrenset bredde for lesbarhet */
-  margin: 24px auto; /* Sentrer og legg til topp/bunn-margin */
-  padding: 0 16px; /* Litt sidepadding */
+/* ====== Titler ====== */
+h1 { /* Hovedtittel */
+  text-align: center; /* Midtstill */
+  margin: 0 0 16px; /* Luft under */
+  font-size: 28px; /* Større skrift */
+  color: #f3f4f6; /* Lysere farge */
+}
+h2 { /* Seksjonstittel */
+  margin: 0 0 12px; /* Luft under */
+  font-size: 20px; /* Moderat størrelse */
+  color: #f3f4f6; /* Lys farge */
 }
 
-/* Kort-komponent */
+/* ====== Kort/panel ====== */
 .card { /* Panel med kant og bakgrunn */
-  background: rgb(0, 0, 0); /* Hvit bakgrunn */
-  border: 1px solid #e5e7eb; /* Lys kant */
-  border-radius: 8px; /* Runde hjørner */
-  padding: 16px; /* Indre luft */
+  background: var(--panel); /* Panelbakgrunn */
+  border: 1px solid var(--border); /* Tynn kant */
+  border-radius: 10px; /* Myke hjørner */
+  padding: 16px; /* Innvendig luft */
   margin-bottom: 16px; /* Avstand under */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04); /* Lett skygge */
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25); /* Dyp skygge */
 }
 
-/* Skjemalayout */
-.form { /* Wrapper for skjema */
-  display: grid; /* Bruker grid-layout */
-  gap: 8px; /* Avstand mellom felter */
+/* ====== Skjema ====== */
+.form { /* Grid-layout for skjema */
+  display: grid; /* Bruk grid */
+  gap: 10px; /* Avstand mellom felt */
+}
+label { /* Etiketter */
+  color: var(--muted); /* Dempet farge */
+  font-size: 14px; /* Litt mindre */
+}
+input { /* Tekstfelt */
+  width: 100%; /* Full bredde */
+  padding: 12px 14px; /* Innvendig luft */
+  background: #0c131a; /* Mørk input-bakgrunn */
+  border: 1px solid var(--border); /* Tynn kant */
+  border-radius: 8px; /* Myke hjørner */
+  color: var(--text); /* Lys tekst */
+  outline: none; /* Fjern standard outline */
+}
+input:focus { /* Fokus */
+  border-color: var(--accent); /* Aksentkant */
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); /* Subtil glød */
 }
 
-/* Input-felt */
-input { /* Tekst- og dato-inputs */
-  padding: 10px; /* Indre luft for klikkflate */
-  border: 1px solid #000000; /* Lys grå kant */
-  border-radius: 6px; /* Runde hjørner */
-  font-size: 16px; /* Lesbar skriftstørrelse */
+/* ====== Knapper ====== */
+button { /* Primærknapp */
+  background: var(--accent); /* Aksentfarge */
+  color: #081016; /* Mørk tekst for kontrast */
+  border: none; /* Ingen kant */
+  border-radius: 8px; /* Myke hjørner */
+  padding: 10px 14px; /* Innvendig luft */
+  font-size: 16px; /* Lesbar størrelse */
+  cursor: pointer; /* Pekehånd */
+  transition: background 0.15s ease-in-out; /* Jevn overgang */
+}
+button:hover { background: var(--accent-600); } /* Litt mørkere ved hover */
+button.danger { background: var(--danger); color: #fff; } /* Rød knapp for slett */
+button.danger:hover { filter: brightness(0.9); } /* Mørkere ved hover */
+
+/* ====== Lister ====== */
+ul { list-style: disc inside; padding-left: 0; } /* Pen punktliste */
+li + li { margin-top: 6px; } /* Litt luft mellom elementer */
+
+/* ====== Meldingsboks ====== */
+.notice { /* Info-/feilmelding */
+  background: #062b22; /* Mørk grønn bakgrunn */
+  border: 1px solid rgba(16,185,129,0.35); /* Aksentkant */
+  color: #bfffe7; /* Lys tekst */
+  padding: 10px 12px; /* Innvendig luft */
+  border-radius: 8px; /* Myke hjørner */
+  margin: 12px 0; /* Luft over/under */
 }
 
-/* Knapper */
-button { /* Generell knappestil */
-  background: #0ea5e9; /* Blå bakgrunn */
-  color: white; /* Hvit tekst */
-  border: none; /* Ingen kantlinje */
-  border-radius: 6px; /* Runde hjørner */
-  padding: 10px 14px; /* Indre luft */
-  font-size: 16px; /* Lesbar skriftstørrelse */
-  cursor: pointer; /* Pekehånd ved hover */
-}
-
-/* Hover-effekt for knapp */
-button:hover { /* Når musen er over knappen */
-  background: #0284c7; /* Litt mørkere blå */
-}
-
-/* Meldingsboks */
-.notice { /* Stil for informasjons-/feilmeldinger */
-  background: #ecfeff; /* Lys blå bakgrunn */
-  border: 1px solid #bae6fd; /* Lys blå kantlinje */
-  color: #0c4a6e; /* Mørk blå tekst */
-  padding: 10px; /* Indre luft */
-  border-radius: 6px; /* Runde hjørner */
-  margin: 12px 0; /* Avstand over og under */
-}
-
-/* Dempet hjelpetekst */
-.muted { /* Mindre fremhevet tekst */
-  color: #ffffff; /* Grå farge */
-  font-size: 14px; /* Litt mindre størrelse */
+/* ====== Footer ====== */
+.site-footer { /* Bunntekst */
+  background: #0a0f13; /* Match header */
+  padding: 16px; /* Innvendig luft */
+  border-top: 1px solid var(--border); /* Kant øverst */
+  text-align: center; /* Midtstill */
+  color: var(--muted); /* Dempet tekst */
 }
