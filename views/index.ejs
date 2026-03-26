@@ -34,7 +34,7 @@
     <% for (const p of people) { %> <%# Løkker gjennom personer %>
       <li> <%# Ett listeelement per person %>
         <strong><%= p.name %></strong> <%# Navn %>
-        – født <%= p.birthyear %> <%# Fødselsår %>
+        – <%= p.age %> år gammel
         – nasjonalitet: <em><%= p.nationality %></em> <%# Nasjonalitetens navn %>
         <form action="/people/<%= p.id %>/delete" method="POST" style="display:inline;margin-left:8px"> <%# Slette-skjema %>
           <button type="submit">Slett</button> <%# Slette-knapp %>
