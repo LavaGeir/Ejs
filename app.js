@@ -86,7 +86,6 @@ function parseISODate(iso) { // Tar inn en streng som skal være 'YYYY-MM-DD'
   return { y, m: mo, d }; // Returnerer komponentene
 } // Slutt parseISODate
 
-// Hjelpefunksjon: beregn alder gitt ISO-dato 'YYYY-MM-DD'
 function computeAge(isoBirthdate) { // Tar inn fødselsdato i 'YYYY-MM-DD'
   const parsed = parseISODate(isoBirthdate); // Parser og validerer datoen
   if (!parsed) return null; // Returnerer null hvis ugyldig dato
