@@ -62,17 +62,43 @@ db.serialize(() => { // Sørger for at SQL-kommandoer kjører i rekkefølge
 
   // Tabell for personer
   db.run(`
-    CREATE TABLE IF NOT EXISTS people (                -- Lager tabell for personer
-      id             INTEGER PRIMARY KEY AUTOINCREMENT,-- Primærnøkkel
-      name           TEXT NOT NULL,                    -- Navn
-      birthyear      INTEGER NOT NULL,                 -- Fødselsår
-      nationality_id INTEGER NOT NULL,                 -- FK til nationalities.id
-      created_by     INTEGER,                          -- (Valgfritt) FK til users.id: hvem la inn
-      FOREIGN KEY (nationality_id) REFERENCES nationalities(id), -- FK definisjon
-      FOREIGN KEY (created_by) REFERENCES users(id)              -- FK til users
-    )
-  `); // Avslutter CREATE TABLE people
+    CREATE TABLE IF NOT EXISTS people (                 -- Lager tabell for personer
+    id             INTEGER PRIMARY KEY AUTOINCREMENT, -- Primærnøkkel
+    name           TEXT NOT NULL,                     -- Navn
+    birthdate      TEXT NOT NULL,                     -- Fødselsdato i ISO-format YYYY-MM-DD
+    nationality_id INTEGER NOT NULL,                  -- FK til nationalities.id
+    created_by     INTEGER,                           -- (Valgfritt) FK til users.id: hvem la inn
+    FOREIGN KEY (nationality_id) REFERENCES nationalities(id), -- FK definisjon
+    FOREIGN KEY (created_by) REFERENCES users(id)               -- FK til users
+  )
+`); // Avslutter CREATE TABLE people
 }); // Avslutter serialize-blokk
+
+// Hjelpefunksjon: valider ISO-dato 'YYYY-MM-DD' og returnér { y, m, d } ved suksess
+function parseISODate(iso) { // Tar inn en streng som skal være 'YYYY-MM-DD'
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || '')); // Matcher år, måned, dag
+  if (!m) return null; // Returnerer null om formatet er feil
+  const y = Number(m[1]); // År som tall
+  const mo = Number(m[2]); // Måned som tall
+  const d = Number(m[3]); // Dag som tall
+  const dt = new Date(y, mo - 1, d); // Lager en Date i lokal tid (måned 0-basert)
+  if (dt.getFullYear() !== y || dt.getMonth() !== (mo - 1) || dt.getDate() !== d) return null; // Avviser ugyldig kalenderdato
+  return { y, m: mo, d }; // Returnerer komponentene
+} // Slutt parseISODate
+
+// Hjelpefunksjon: beregn alder gitt ISO-dato 'YYYY-MM-DD'
+function computeAge(isoBirthdate) { // Tar inn fødselsdato i 'YYYY-MM-DD'
+  const parsed = parseISODate(isoBirthdate); // Parser og validerer datoen
+  if (!parsed) return null; // Returnerer null hvis ugyldig dato
+  const today = new Date(); // Henter dagens dato
+  let age = today.getFullYear() - parsed.y; // Starter med differanse i år
+  const currentMonth = today.getMonth() + 1; // Henter måned (1-12)
+  const currentDay = today.getDate(); // Henter dag i måneden
+  if (currentMonth < parsed.m || (currentMonth === parsed.m && currentDay < parsed.d)) { // Har ikke hatt bursdag ennå i år
+    age--; // Justerer ned alder
+  } // Slutt if
+  return age; // Returnerer beregnet alder
+} // Slutt computeAge
 
 // Setter EJS som templatemotor
 app.set('view engine', 'ejs'); // Forteller Express at .ejs-filer skal rendre HTML
@@ -162,58 +188,89 @@ function requireAuth(req, res, next) { // Tilgangskontroll
   next(); // Fortsett
 } // Slutt requireAuth
 
-// GET /views - viser skjema og lister alle personer
+// GET / - viser skjema og lister alle personer
 app.get('/', async (req, res) => { // Forsiden
   try { // Feilhåndtering
-    const people = await dbAll( // Henter personer + nasjonalitet
+    const people = await dbAll( // Henter personer + nasjonalitet + fødselsdato
       `SELECT 
-        p.id, 
-        p.name, 
-        p.birthyear, 
-        COALESCE(n.name, '(ukjent)') AS nationality
-       FROM people p
-       LEFT JOIN nationalities n ON n.id = p.nationality_id
-       ORDER BY p.id DESC`,
-      []
+        p.id,                                  -- Person-ID
+        p.name,                                -- Navn
+        p.birthdate,                           -- Fødselsdato (ISO)
+        COALESCE(n.name, '(ukjent)') AS nationality -- Nasjonalitetens navn
+        FROM people p
+        LEFT JOIN nationalities n ON n.id = p.nationality_id
+       ORDER BY p.id DESC`,                    // Nyeste først
+      []                                       // Ingen parametre
     ); // Ferdig SELECT
-    res.render('index', { title: 'Registrer personer', people, message: req.query.message || null }); // Renderer
+
+    const peopleWithAge = people.map(p => { // Mapper gjennom personene
+      const age = p.birthdate ? computeAge(p.birthdate) : null; // Beregner alder (eller null om mangler fødselsdato)
+      return { ...p, age }; // Legger til 'age' i hvert objekt
+    }); // Slutt map
+
+    res.render( // Renderer EJS
+      'index', // View-fil
+      { 
+        title: 'Registrer personer',                 // Tittel for siden
+        people: peopleWithAge,                       // Personliste med alder
+        message: req.query.message || null           // Valgfri melding
+      } // Slutt data-objekt
+    ); // Slutt render
   } catch (err) { // Ved feil
-    console.error(err); // Logger
-    res.status(500).send('Noe gikk galt.'); // 500
+    console.error(err); // Logger feilen i konsollen
+    res.status(500).send('Noe gikk galt.'); // Returnerer 500-feil til klient
   } // Slutt try/catch
 }); // Slutt rute
 
 // POST /people - lagrer ny person
 app.post('/people', async (req, res) => { // Lagrer person
   try { // Feilhåndtering
-    const { name, birthyear, nationality } = req.body; // Leser felter
+    const { name, birthdate, nationality } = req.body; // Leser felter fra skjema
 
-    if (!name || !birthyear || !nationality) { // Validerer felt
-      const people = await dbAll(
-        `SELECT p.id, p.name, p.birthyear, COALESCE(n.name, '(ukjent)') AS nationality
+    if (!name || !birthdate || !nationality) { // Sjekker at alle felt er fylt ut
+      const people = await dbAll( // Henter liste for å vise igjen
+        `SELECT p.id, p.name, p.birthdate, COALESCE(n.name, '(ukjent)') AS nationality
          FROM people p LEFT JOIN nationalities n ON n.id = p.nationality_id
          ORDER BY p.id DESC`
-      ); // Henter liste for visning
-      return res.status(400).render('index', { title: 'Registrer personer', people, message: 'Fyll ut navn, fødselsår og nasjonalitet.' }); // Feilmelding
-    } // Slutt validering
+      ); // Ferdig SELECT
+      const peopleWithAge = people.map(p => ({ ...p, age: p.birthdate ? computeAge(p.birthdate) : null })); // Legger på alder
+      return res.status(400).render('index', { title: 'Registrer personer', people: peopleWithAge, message: 'Fyll ut navn, fødselsdato og nasjonalitet.' }); // Feilmelding
+    } // Slutt validering for tomme felt
 
-    const year = parseInt(birthyear, 10); // Parser år
-    const currentYear = new Date().getFullYear(); // Henter årstall
-    if (!Number.isInteger(year) || year < 1800 || year > currentYear) { // Validerer år
+    const parsed = parseISODate(birthdate); // Parser og validerer 'YYYY-MM-DD'
+    if (!parsed) { // Ugyldig datoformat eller kalenderdato
       const people = await dbAll(
-        `SELECT p.id, p.name, p.birthyear, COALESCE(n.name, '(ukjent)') AS nationality
+        `SELECT p.id, p.name, p.birthdate, COALESCE(n.name, '(ukjent)') AS nationality
          FROM people p LEFT JOIN nationalities n ON n.id = p.nationality_id
          ORDER BY p.id DESC`
       ); // Henter liste
-      return res.status(400).render('index', { title: 'Registrer personer', people, message: 'Ugyldig fødselsår.' }); // Feilmelding
-    } // Slutt år-sjekk
+      const peopleWithAge = people.map(p => ({ ...p, age: p.birthdate ? computeAge(p.birthdate) : null })); // Legger på alder
+      return res.status(400).render('index', { title: 'Registrer personer', people: peopleWithAge, message: 'Ugyldig fødselsdato. Bruk format YYYY-MM-DD.' }); // Feilmelding
+    } // Slutt datoformat-sjekk
 
-    const nationalityId = await getOrCreateNationalityId(nationality); // Henter/lagrer nasjonalitet
+    const minDate = { y: 1800, m: 1, d: 1 }; // Nedre grense 1800-01-01
+    const today = new Date(); // Dagens dato
+    const todayParts = { y: today.getFullYear(), m: today.getMonth() + 1, d: today.getDate() }; // Dagens dato-komponenter
 
-    const createdBy = req.session.user ? req.session.user.id : null; // Valgfritt: hvem la inn
-    await dbRun( // Setter inn person
-      'INSERT INTO people (name, birthyear, nationality_id, created_by) VALUES (?, ?, ?, ?)',
-      [String(name).trim(), year, nationalityId, createdBy]
+    const beforeMin = (parsed.y < minDate.y) || (parsed.y === minDate.y && (parsed.m < minDate.m || (parsed.m === minDate.m && parsed.d < minDate.d))); // Sjekker mot nedre grense
+    const afterToday = (parsed.y > todayParts.y) || (parsed.y === todayParts.y && (parsed.m > todayParts.m || (parsed.m === todayParts.m && parsed.d > todayParts.d))); // Sjekker om i fremtiden
+
+    if (beforeMin || afterToday) { // Utenfor gyldig intervall
+      const people = await dbAll(
+        `SELECT p.id, p.name, p.birthdate, COALESCE(n.name, '(ukjent)') AS nationality
+        FROM people p LEFT JOIN nationalities n ON n.id = p.nationality_id
+        ORDER BY p.id DESC`
+      ); // Henter liste
+      const peopleWithAge = people.map(p => ({ ...p, age: p.birthdate ? computeAge(p.birthdate) : null })); // Legger på alder
+      return res.status(400).render('index', { title: 'Registrer personer', people: peopleWithAge, message: 'Fødselsdato må være mellom 1800-01-01 og i dag.' }); // Feilmelding
+    } // Slutt intervall-sjekk
+
+    const nationalityId = await getOrCreateNationalityId(nationality); // Henter/lagrer nasjonalitet og får id
+
+    const createdBy = req.session.user ? req.session.user.id : null; // (Valgfritt) hvem la inn
+    await dbRun( // Setter inn person med fødselsdato
+      'INSERT INTO people (name, birthdate, nationality_id, created_by) VALUES (?, ?, ?, ?)', // Bruker birthdate i stedet for birthyear
+      [String(name).trim(), String(birthdate), nationalityId, createdBy] // Parametre
     ); // Ferdig INSERT
 
     res.redirect('/?message=Person+lagret'); // Til forsiden med melding

@@ -8,8 +8,15 @@
     <label for="name">Navn</label> <%# Etikett for navn %>
     <input id="name" name="name" type="text" required /> <%# Input for navn (påkrevd) %>
 
-    <label for="birthyear">Fødselsår</label> <%# Etikett for fødselsår %>
-    <input id="birthyear" name="birthyear" type="number" min="1800" max="<%= new Date().getFullYear() %>" step="1" required /> <%# Tallfelt for år %>
+  <label for="birthdate">Fødselsdato</label> <%# Etikett for fødselsdato %>
+  <input 
+  id="birthdate" 
+  name="birthdate" 
+  type="date" 
+  min="1800-01-01" 
+  max="<%= new Date().toISOString().slice(0,10) %>" 
+  required 
+/> <%# HTML5-datofelt; begrenser til 1800-01-01 .. i dag %>
 
     <label for="nationality">Nasjonalitet</label> <%# Etikett for nasjonalitet %>
     <input id="nationality" name="nationality" type="text" required /> <%# Input for nasjonalitet %>
@@ -27,7 +34,7 @@
     <% for (const p of people) { %> <%# Løkker gjennom personer %>
       <li> <%# Ett listeelement per person %>
         <strong><%= p.name %></strong> <%# Navn %>
-        –<%= new Date().getFullYear() - p.birthyear %> År gammel
+        – født <%= p.birthyear %> <%# Fødselsår %>
         – nasjonalitet: <em><%= p.nationality %></em> <%# Nasjonalitetens navn %>
         <form action="/people/<%= p.id %>/delete" method="POST" style="display:inline;margin-left:8px"> <%# Slette-skjema %>
           <button type="submit">Slett</button> <%# Slette-knapp %>
